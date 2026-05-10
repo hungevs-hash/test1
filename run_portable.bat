@@ -7,4 +7,3 @@ if not exist dist\CaseManagerLauncher\CaseManagerLauncher.exe (
 )
 
 start "Case Manager" dist\CaseManagerLauncher\CaseManagerLauncher.exe
-start "" dist\CaseManagerLauncher\CaseManagerLauncher.exe

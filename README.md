@@ -66,3 +66,13 @@ Nếu app bật lên rồi tắt ngay, hãy kiểm tra thư mục `logs/`:
 - `logs/launcher.log`
 
 Các script `.bat` đã được cập nhật để giữ cửa sổ và báo đường dẫn log lỗi.
+
+## Tạo file cài đặt không cần Python (khuyến nghị)
+Bạn **không cần cài Python trên máy người dùng cuối**. Dùng GitHub Actions để build tự động:
+
+1. Vào tab `Actions` của repo.
+2. Chọn workflow `Build Windows Installer`.
+3. Bấm `Run workflow`.
+4. Tải artifact `CaseManagerSetup` (file `CaseManagerSetup.exe`).
+
+Sau đó gửi `CaseManagerSetup.exe` cho người dùng cài đặt như phần mềm bình thường.

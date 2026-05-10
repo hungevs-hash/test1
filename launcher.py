@@ -35,10 +35,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-if not APP_FILE.exists():
-    print("Cannot find app.py")
-    sys.exit(1)
-
-cmd = [sys.executable, "-m", "streamlit", "run", str(APP_FILE)]
-subprocess.run(cmd, cwd=str(APP_DIR), check=False)
