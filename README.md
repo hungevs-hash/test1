@@ -58,3 +58,11 @@ build_final_installer.bat
 - `dist_installer/CaseManagerSetup.exe`
 
 Sau khi cài xong sẽ có shortcut trên Desktop/Start Menu (tùy chọn desktop icon trong wizard cài).
+
+## Troubleshooting (Windows)
+Nếu app bật lên rồi tắt ngay, hãy kiểm tra thư mục `logs/`:
+- `logs/install.log`
+- `logs/app.log`
+- `logs/launcher.log`
+
+Các script `.bat` đã được cập nhật để giữ cửa sổ và báo đường dẫn log lỗi.

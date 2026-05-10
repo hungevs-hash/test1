@@ -32,3 +32,10 @@
 - Bấm Next -> Next -> Install
 - Tick tạo icon Desktop nếu muốn
 - Mở app từ shortcut `Personal Case Manager`
+
+## Nếu bấm chạy mà cửa sổ tự tắt
+- Chạy `run_app.bat` thay vì click trực tiếp file exe.
+- Mở thư mục `logs/` để xem lỗi:
+  - `install.log`: lỗi cài thư viện
+  - `app.log`: lỗi khi chạy app
+  - `launcher.log`: lỗi launcher (bản portable)
