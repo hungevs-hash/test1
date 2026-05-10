@@ -15,3 +15,5 @@ python -m streamlit run app.py --server.headless=true > logs\app.log 2>&1
 
 echo [INFO] App exited. See logs\app.log for details.
 pause
+python -m pip install -r requirements.txt
+streamlit run app.py
