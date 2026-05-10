@@ -45,3 +45,16 @@ File EXE sau build:
 
 Chạy nhanh bản đã build:
 - `run_portable.bat`
+
+## Bản cuối kiểu phần mềm thường (có icon + installer)
+Để tạo bản cài đặt cho người dùng cuối (không cần mở source):
+
+1. Cài Inno Setup (để có lệnh `iscc`).
+2. Chạy:
+```bash
+build_final_installer.bat
+```
+3. Nhận file cài đặt cuối:
+- `dist_installer/CaseManagerSetup.exe`
+
+Sau khi cài xong sẽ có shortcut trên Desktop/Start Menu (tùy chọn desktop icon trong wizard cài).

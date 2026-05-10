@@ -26,3 +26,9 @@
 ### Chạy trên máy người dùng
 - Chạy trực tiếp `CaseManagerLauncher.exe`.
 - Trình duyệt sẽ mở giao diện app local.
+
+## Cài bản cuối (khuyến nghị)
+- Chạy `CaseManagerSetup.exe`
+- Bấm Next -> Next -> Install
+- Tick tạo icon Desktop nếu muốn
+- Mở app từ shortcut `Personal Case Manager`
