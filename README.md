@@ -5,7 +5,7 @@ Phần mềm quản lý ca bệnh cá nhân cho Windows, hỗ trợ Việt/Anh, 
 ## Chức năng chính
 - Đăng nhập 3 vai trò: admin / editor / viewer.
 - Cấu hình trường dữ liệu động (admin).
-- Thêm/sửa ca bệnh, tự động sinh mã ca `CASE-YYYY-####`.
+- Thêm/sửa ca bệnh, tự động sinh mã ca `YYYY####` (ví dụ `20260001`).
 - Quản lý xét nghiệm A/B/PCR/NGS.
 - Lưu audit log khi cập nhật hồ sơ ca bệnh.
 - Import/Export Excel (`.xlsx`).
@@ -45,6 +45,19 @@ File EXE sau build:
 
 Chạy nhanh bản đã build:
 - `run_portable.bat`
+
+## Xuất bản FULL dạng ZIP (tải về dùng luôn)
+Nếu bạn muốn gửi cho người khác một bản ZIP đầy đủ source + script chạy nhanh:
+
+```bash
+build_portable_zip.bat
+```
+
+File nhận được:
+- `dist_zip/CaseManager_portable.zip`
+
+Sau khi giải nén, người dùng chỉ cần mở:
+- `run_app.bat`
 
 ## Bản cuối kiểu phần mềm thường (có icon + installer)
 Để tạo bản cài đặt cho người dùng cuối (không cần mở source):

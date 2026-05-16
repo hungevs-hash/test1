@@ -11,12 +11,17 @@ DB_PATH = Path("data.db")
 DATE_FMT = "%d/%m/%Y"
 
 DEFAULT_FIELDS = [
-    {"key": "full_name", "label_vi": "Họ tên", "label_en": "Full name", "type": "text"},
-    {"key": "age", "label_vi": "Tuổi", "label_en": "Age", "type": "number"},
     {"key": "case_code", "label_vi": "Mã số ca", "label_en": "Case code", "type": "text"},
+    {"key": "lab_code", "label_vi": "Số Lab", "label_en": "Lab code", "type": "text"},
+    {"key": "full_name", "label_vi": "Họ tên", "label_en": "Full name", "type": "text"},
+    {"key": "birth_year", "label_vi": "Năm sinh", "label_en": "Birth year", "type": "number"},
+    {"key": "age", "label_vi": "Tuổi", "label_en": "Age", "type": "number"},
+    {"key": "gender", "label_vi": "Giới tính", "label_en": "Gender", "type": "text"},
     {"key": "address", "label_vi": "Địa chỉ", "label_en": "Address", "type": "text"},
+    {"key": "hospital", "label_vi": "Bệnh viện gửi mẫu", "label_en": "Hospital", "type": "text"},
     {"key": "symptoms", "label_vi": "Triệu chứng", "label_en": "Symptoms", "type": "text"},
     {"key": "onset_date", "label_vi": "Ngày khởi phát", "label_en": "Onset date", "type": "date"},
+    {"key": "sample_received_date", "label_vi": "Ngày nhận mẫu", "label_en": "Sample received date", "type": "date"},
 ]
 
 USERS = {
@@ -100,13 +105,23 @@ def next_case_code() -> str:
     year = datetime.now().year
     with db_conn() as conn:
         row = conn.execute(
-            "SELECT case_code FROM cases WHERE case_code LIKE ? ORDER BY id DESC LIMIT 1",
-            (f"CASE-{year}-%",),
+            "SELECT case_code FROM cases WHERE case_code GLOB ? ORDER BY case_code DESC LIMIT 1",
+            (f"{year}[0-9][0-9][0-9][0-9]",),
         ).fetchone()
     if not row:
-        return f"CASE-{year}-0001"
-    current = int(row[0].split("-")[-1])
-    return f"CASE-{year}-{current+1:04d}"
+        return f"{year}0001"
+    current = int(str(row[0])[-4:])
+    return f"{year}{current+1:04d}"
+
+
+def next_case_code_from(last_code: str | None) -> str:
+    year = datetime.now().year
+    if not last_code or len(str(last_code)) != 8 or not str(last_code).isdigit():
+        return f"{year}0001"
+    if str(last_code)[:4] != str(year):
+        return f"{year}0001"
+    current = int(str(last_code)[-4:])
+    return f"{year}{current+1:04d}"
 
 
 def audit(table: str, key: str, field: str, old: str, new: str, reason: str = ""):
@@ -198,8 +213,12 @@ def cases_screen():
     if st.session_state["role"] == "viewer":
         return
 
-    mode = st.radio(t("Chế độ", "Mode"), [t("Thêm mới", "Create"), t("Cập nhật", "Update")], horizontal=True)
-    if mode == t("Thêm mới", "Create"):
+    mode = st.radio(
+        t("Chế độ", "Mode"),
+        [t("Thêm mới (Form)", "Create (Form)"), t("Nhập hàng loạt (Bảng)", "Bulk (Table)"), t("Cập nhật", "Update")],
+        horizontal=True,
+    )
+    if mode == t("Thêm mới (Form)", "Create (Form)"):
         with st.form("create_case"):
             payload = case_form()
             if st.form_submit_button(t("Lưu ca", "Save case")):
@@ -211,6 +230,48 @@ def cases_screen():
                     conn.commit()
                 st.success(t("Đã tạo ca bệnh.", "Case created."))
                 st.rerun()
+    elif mode == t("Nhập hàng loạt (Bảng)", "Bulk (Table)"):
+        st.caption(t("Dán trực tiếp từ Excel vào bảng dưới.", "Paste directly from Excel into this table."))
+        bulk_cols = ["case_code", "lab_code", "full_name", "age", "gender", "address", "onset_date", "sample_received_date"]
+        if "bulk_df" not in st.session_state:
+            st.session_state.bulk_df = pd.DataFrame([{c: "" for c in bulk_cols} for _ in range(10)])
+
+        c1, c2, c3 = st.columns([3, 3, 2])
+        fill_col = c1.selectbox(t("Cột điền nhanh", "Quick-fill column"), bulk_cols)
+        fill_value = c2.text_input(t("Giá trị điền nhanh", "Quick-fill value"))
+        if c3.button(t("Áp dụng cho mọi dòng", "Apply to all rows")):
+            st.session_state.bulk_df[fill_col] = fill_value
+
+        edited = st.data_editor(st.session_state.bulk_df, num_rows="dynamic", use_container_width=True, key="bulk_editor")
+        st.session_state.bulk_df = edited
+
+        if st.button(t("Lưu dữ liệu hàng loạt", "Save bulk data")):
+            saved = 0
+            next_code = next_case_code()
+            with db_conn() as conn:
+                for _, row in edited.iterrows():
+                    data = {k: ("" if pd.isna(v) else str(v).strip()) for k, v in row.to_dict().items()}
+                    if not any(data.values()):
+                        continue
+                    code = data.get("case_code") or next_code
+                    if not data.get("case_code"):
+                        next_code = next_case_code_from(code)
+                    data["case_code"] = code
+                    conn.execute(
+                        "INSERT OR REPLACE INTO cases(case_code,data_json,created_by,created_at,updated_by,updated_at) VALUES(?,?,?,?,?,?)",
+                        (
+                            code,
+                            json.dumps(data, ensure_ascii=False),
+                            st.session_state["user"],
+                            datetime.now().isoformat(),
+                            st.session_state["user"],
+                            datetime.now().isoformat(),
+                        ),
+                    )
+                    saved += 1
+                conn.commit()
+            st.success(t(f"Đã lưu {saved} dòng.", f"Saved {saved} rows."))
+            st.rerun()
     else:
         case_code = st.text_input("Case code")
         if case_code:
